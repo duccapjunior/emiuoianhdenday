@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tặng Em 💖</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #ffccff, #ccffff);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      transition: background 1s;
+    }
+
+    .input-container, .qr-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 1000;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 600px;
+      animation: fadeIn 1s ease;
+    }
+
+    .input-container h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #ff3399;
+    }
+
+    .input-container input, .input-container select, .qr-container input {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .input-container label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .input-container button, .qr-container button {
+      padding: 14px 32px;
+      border: none;
+      background-color: #ff66b2;
+      color: white;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 18px;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+
+    .input-container button:hover, .qr-container button:hover {
+      background-color: #e60073;
+    }
+
+    .falling-text, .falling-img, .falling-heart {
+      position: absolute;
+      top: -50px;
+      font-weight: bold;
+      transform: translateZ(0);
+      animation: fall linear forwards;
+      z-index: 10;
+    }
+
+    .falling-text {
+      font-size: 24px;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    .falling-img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .falling-heart {
+      color: #ff3399;
+      font-size: 20px;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-50px) translateX(0px); opacity: 1; }
+      100% { transform: translateY(100vh) translateX(100px); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8) translate(-50%, -50%); }
+      to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .font-option {
+      font-size: 18px;
+      padding: 4px;
+    }
+
+    .watermark {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      color: #999;
+      font-size: 14px;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+<div class="input-container" id="formContainer">
+  <h2>🎁 Tặng Em Một Cơn Mưa Yêu Thương</h2>
+  <label>Chữ rơi (cách nhau bằng dấu phẩy):</label>
+  <input type="text" id="textInput" value="Duc Cap Coder">
+  <label>Link ảnh (tùy chọn):</label>
+  <input type="text" id="imgInput">
+  <label>Màu nền:</label>
+  <input type="color" id="bgColor" value="#ffccff">
+  <label>Màu chữ:</label>
+  <input type="color" id="textColor" value="#ff3399">
+  <label>Phông chữ:</label>
+  <select id="fontSelect">
+    <option value="'Comic Sans MS', cursive" class="font-option">Comic Sans</option>
+    <option value="'Segoe UI', sans-serif" class="font-option">Segoe UI</option>
+    <option value="'Courier New', monospace" class="font-option">Courier</option>
+    <option value="'Times New Roman', serif" class="font-option">Times</option>
+    <option value="'Pacifico', cursive" class="font-option">Pacifico</option>
+    <option value="'Arial Black', Gadget" class="font-option">Arial Black</option>
+  </select>
+  <button onclick="showQR()">Tặng Em 💌</button>
+</div>
+
+<div class="qr-container hidden" id="qrContainer">
+  <h3>📱 Mã QR Dẫn Đến Món Quà</h3>
+  <input type="text" id="qrTitle" value="Tặng Em Cơn Mưa Yêu Thương">
+  <label>Màu QR:</label>
+  <input type="color" id="qrColor" value="#e60073">
+  <button onclick="generateQR()">Tạo mã QR 💘</button>
+  <div id="qrCodeArea"></div>
+  <button onclick="startRain()">Bắt đầu trình diễn 🎉</button>
+</div>
+
+<div class="watermark">Duc Cap Coder ©</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  let interval;
+  let storedInput = "", storedImg = "", storedBG = "", storedColor = "", storedFont = "";
+
+  function showQR() {
+    storedInput = document.getElementById('textInput').value;
+    storedImg = document.getElementById('imgInput').value;
+    storedBG = document.getElementById('bgColor').value;
+    storedColor = document.getElementById('textColor').value;
+    storedFont = document.getElementById('fontSelect').value;
+    document.getElementById('formContainer').classList.add('hidden');
+    document.getElementById('qrContainer').classList.remove('hidden');
+  }
+
+  function generateQR() {
+    const area = document.getElementById('qrCodeArea');
+    area.innerHTML = '';
+    const color = document.getElementById('qrColor').value;
+    const qr = new QRCode(area, {
+      text: window.location.href + '#start',
+      width: 200,
+      height: 200,
+      colorDark: color,
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  function startRain() {
+    document.getElementById('qrContainer').classList.add('hidden');
+    const words = storedInput.split(',').map(w => w.trim()).filter(w => w);
+    document.body.style.background = storedBG;
+    interval = setInterval(() => {
+      for (let i = 0; i < 5; i++) {
+        const word = words[Math.floor(Math.random() * words.length)];
+        createFallingText(word, storedColor, storedFont);
+        createFallingHeart();
+        if (storedImg) createFallingImage(storedImg);
+      }
+    }, 300);
+  }
+
+  function createFallingText(word, color, font) {
+    const text = document.createElement('div');
+    text.className = 'falling-text';
+    text.innerText = word;
+    text.style.left = Math.random() * window.innerWidth + 'px';
+    text.style.color = color;
+    text.style.fontFamily = font;
+    text.style.animationDuration = (Math.random() * 2 + 3) + 's';
+    document.body.appendChild(text);
+    setTimeout(() => text.remove(), 6000);
+  }
+
+  function createFallingHeart() {
+    const heart = document.createElement('div');
+    heart.className = 'falling-heart';
+    heart.innerText = '💖';
+    heart.style.left = Math.random() * window.innerWidth + 'px';
+    heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 6000);
+  }
+
+  function createFallingImage(url) {
+    const img = document.createElement('img');
+    img.className = 'falling-img';
+    img.src = url;
+    img.style.left = Math.random() * window.innerWidth + 'px';
+    img.style.animationDuration = (Math.random() * 2 + 3) + 's';
+    document.body.appendChild(img);
+    setTimeout(() => img.remove(), 6000);
+  }
+
+  window.onload = () => {
+    if (window.location.hash === "#start") {
+      storedInput = "Duc Cap Coder";
+      storedColor = "#ff3399";
+      storedBG = "#ffccff";
+      storedFont = "'Comic Sans MS', cursive";
+      startRain();
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</body>
+</html>
